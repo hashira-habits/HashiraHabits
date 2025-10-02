@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/shared.js"></script>
+</head>
+<body>
+  <header><nav>
+    <a href="/index.html">Home</a>
+    <a href="/login.html">Login</a>
+    <a href="/register.html">Register</a>
+  </nav></header>
+  <div class="container">
+    <h2>Login</h2>
+    <div class="card">
+      <label>Email</label>
+      <input id="email" type="text" style="width:100%"/>
+      <label>Password</label>
+      <input id="password" type="password" style="width:100%"/>
+      <div style="margin:8px 0;"><label><input id="remember" type="checkbox"/> Remember me</label></div>
+      <button class="btn" id="loginBtn">Login</button>
+    </div>
+  </div>
+  <div class="toast"></div>
+  <script>
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'Login failed');
+        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('fullName', data.fullName);
+        localStorage.setItem('avatar', data.avatar);
+        window.location.href = '/dashboard.html';
+      } catch (e) {
+        showToast(e.message);
+      }
+    });
+  </script>
+</body>
+</html>
+
+

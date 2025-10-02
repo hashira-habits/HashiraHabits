@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habits</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/shared.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/learning.html">Learning</a>
+      <a href="/habits.html">Habits</a>
+      <a href="/rewards.html">Rewards</a>
+    </nav>
+  </header>
+  <div class="container">
+    <h2>Habits</h2>
+    <div class="card">
+      <h3>Add New Habit</h3>
+      <input id="name" placeholder="Habit name"/>
+      <select id="frequency">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+      </select>
+      <button class="btn" id="addBtn">Add</button>
+    </div>
+    <div class="card" id="list"></div>
+  </div>
+  <div class="toast"></div>
+  <script>
+    const userId = requireAuth();
+    async function load() {
+      const res = await fetch('/api/habits?userId=' + userId);
+      const items = await res.json();
+      const container = document.getElementById('list');
+      container.innerHTML = items.map(h => `
+        <div class="card">
+          <div><b>${h.name}</b> (${h.frequency}) — Streak: ${h.streak}</div>
+          <button class="btn" onclick="mark('${h.id}')">Mark Done</button>
+        </div>
+      `).join('');
+    }
+
+    async function mark(id) {
+      try {
+        const res = await fetch('/api/habits/' + id + '/mark', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed');
+        showToast('Habit marked! +' + (data.userSummary ? data.userSummary.xp : '') + ' XP');
+        load();
+      } catch (e) { showToast(e.message); }
+    }
+
+    document.getElementById('addBtn').addEventListener('click', async () => {
+      const body = { userId, name: document.getElementById('name').value, frequency: document.getElementById('frequency').value };
+      const res = await fetch('/api/habits', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      if (!res.ok) showToast('Failed to add'); else { showToast('Added'); load(); }
+    });
+
+    load();
+    window.mark = mark;
+  </script>
+</body>
+</html>
+
+

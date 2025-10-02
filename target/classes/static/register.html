@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/shared.js"></script>
+</head>
+<body>
+  <header><nav>
+    <a href="/index.html">Home</a>
+    <a href="/login.html">Login</a>
+    <a href="/register.html">Register</a>
+  </nav></header>
+  <div class="container">
+    <h2>Register</h2>
+    <div class="card">
+      <label>Full Name</label>
+      <input id="fullName" type="text" style="width:100%"/>
+      <label>Email</label>
+      <input id="email" type="text" style="width:100%"/>
+      <label>Password</label>
+      <input id="password" type="password" style="width:100%"/>
+      <label>Favorite Learning Area</label>
+      <input id="favoriteLearningArea" type="text" style="width:100%"/>
+      <label>Avatar</label>
+      <select id="avatar" style="width:100%">
+        <option>Tanjiro</option>
+        <option>Zenitsu</option>
+        <option>Inosuke</option>
+        <option>Nezuko</option>
+        <option>Giyu</option>
+      </select>
+      <button class="btn" id="registerBtn" style="margin-top:10px">Register</button>
+    </div>
+  </div>
+  <div class="toast"></div>
+  <script>
+    document.getElementById('registerBtn').addEventListener('click', async () => {
+      const body = {
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        favoriteLearningArea: document.getElementById('favoriteLearningArea').value,
+        avatar: document.getElementById('avatar').value,
+      };
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.message || 'Registration failed');
+        }
+        showToast('Registration successful. Please login.');
+        setTimeout(() => window.location.href = '/login.html', 800);
+      } catch (e) { showToast(e.message); }
+    });
+  </script>
+</body>
+</html>
+
+

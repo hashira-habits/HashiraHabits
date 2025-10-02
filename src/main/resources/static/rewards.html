@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rewards</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/shared.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/rewards.html">Rewards</a>
+    </nav>
+  </header>
+  <div class="container">
+    <h2>Rewards Store</h2>
+    <div id="coins" class="card">Coins: 0</div>
+    <div id="list"></div>
+  </div>
+  <div class="toast"></div>
+  <script>
+    const userId = requireAuth();
+    async function load() {
+      const ures = await fetch('/api/users/' + userId);
+      if (ures.ok) { const u = await ures.json(); document.getElementById('coins').textContent = 'Coins: ' + u.coins; }
+      const res = await fetch('/api/rewards');
+      const items = await res.json();
+      document.getElementById('list').innerHTML = items.map(r => `
+        <div class="card">
+          <div><b>${r.name}</b> — ${r.priceCoins} coins</div>
+          <button class="btn" onclick="buy('${r.id}')">Unlock</button>
+        </div>
+      `).join('');
+    }
+    async function buy(rewardId) {
+      const res = await fetch('/api/rewards/purchase', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userId, rewardId })});
+      const data = await res.json();
+      if (!res.ok || !data.success) { showToast(data.message||'Failed'); } else { showToast('Purchased!'); load(); }
+    }
+    load();
+    window.buy = buy;
+  </script>
+</body>
+</html>
+
+

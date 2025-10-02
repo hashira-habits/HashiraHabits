@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/shared.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/learning.html">Learning</a>
+      <a href="/habits.html">Habits</a>
+    </nav>
+  </header>
+  <div class="container">
+    <h2>Learning Modules</h2>
+    <div id="modules"></div>
+    <div class="card"><canvas id="chart" height="120"></canvas></div>
+  </div>
+  <div class="toast"></div>
+  <script>
+    const userId = requireAuth();
+    async function load() {
+      const res = await fetch('/api/learning?userId=' + userId);
+      const items = await res.json();
+      document.getElementById('modules').innerHTML = items.map(m => `
+        <div class="card">
+          <div><b>${m.title}</b> — ${m.status} — ${m.progressPercent}%</div>
+          <button class="btn" onclick="completeModule('${m.id}')">Mark Complete</button>
+        </div>
+      `).join('');
+
+      // tiny chart mock using progressPercent values
+      const ctx = document.getElementById('chart');
+      new Chart(ctx, { type:'line', data:{ labels: items.map(i=>i.title), datasets:[{ label:'Progress %', data: items.map(i=>i.progressPercent), borderColor:'#2563eb'}] } });
+    }
+    async function completeModule(id) {
+      try {
+        const res = await fetch('/api/learning/' + id + '/complete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userId }) });
+        if (!res.ok) { const e = await res.json(); throw new Error(e.message||'Failed'); }
+        showToast('Module completed!');
+        load();
+      } catch(e) { showToast(e.message); }
+    }
+    load();
+    window.completeModule = completeModule;
+  </script>
+</body>
+</html>
+
+

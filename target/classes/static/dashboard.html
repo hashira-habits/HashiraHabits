@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/shared.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/learning.html">Learning</a>
+      <a href="/habits.html">Habits</a>
+      <a href="/rewards.html">Rewards</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/profile.html">Profile</a>
+      <a href="/settings.html">Settings</a>
+    </nav>
+  </header>
+  <div class="container">
+    <div class="card" id="welcome"></div>
+    <div class="card">
+      <div class="stats">
+        <div>XP: <span id="xp">0</span></div>
+        <div>Coins: <span id="coins">0</span></div>
+        <div>Level: <span id="level">0</span></div>
+      </div>
+      <div class="xpbar" style="margin-top:8px"><div id="xpfill"></div></div>
+    </div>
+    <div class="grid">
+      <a class="card" href="/learning.html">Today's Learning</a>
+      <a class="card" href="/habits.html">Today's Habits</a>
+    </div>
+  </div>
+  <div class="toast"></div>
+  <script>
+    const userId = requireAuth();
+    async function load() {
+      const res = await fetch('/api/users/' + userId);
+      if (!res.ok) return;
+      const u = await res.json();
+      document.getElementById('welcome').innerHTML = `<h3>Welcome, ${u.fullName} (${u.avatar})</h3>`;
+      document.getElementById('xp').textContent = u.xp;
+      document.getElementById('coins').textContent = u.coins;
+      document.getElementById('level').textContent = u.level;
+      const pct = (u.xp % 1000) / 10;
+      document.getElementById('xpfill').style.width = pct + '%';
+    }
+    load();
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/shared.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/profile.html">Profile</a>
+    </nav>
+  </header>
+  <div class="container">
+    <h2>Profile</h2>
+    <div class="card">
+      <label>Name</label>
+      <input id="fullName"/>
+      <label>Email</label>
+      <input id="email"/>
+      <label>Avatar</label>
+      <select id="avatar">
+        <option>Tanjiro</option>
+        <option>Zenitsu</option>
+        <option>Inosuke</option>
+        <option>Nezuko</option>
+        <option>Giyu</option>
+      </select>
+      <label>Favorite Subject</label>
+      <input id="favoriteLearningArea"/>
+      <div style="margin-top:8px">
+        <button class="btn" id="saveBtn">Save</button>
+        <button class="btn secondary" id="resetBtn">Reset Progress</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast"></div>
+  <script>
+    const userId = requireAuth();
+    let user;
+    async function load() {
+      const res = await fetch('/api/users/' + userId);
+      user = await res.json();
+      fullName.value = user.fullName; email.value = user.email; avatar.value = user.avatar; favoriteLearningArea.value = user.favoriteLearningArea||'';
+    }
+    saveBtn.addEventListener('click', async () => {
+      const body = { fullName: fullName.value, email: email.value, avatar: avatar.value, favoriteLearningArea: favoriteLearningArea.value };
+      const res = await fetch('/api/users/' + userId, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+      if (res.ok) showToast('Saved'); else showToast('Failed');
+    });
+    resetBtn.addEventListener('click', async () => {
+      if (!confirm('Reset progress?') || !confirm('Are you sure?')) return;
+      user.xp = 0; user.level = 0; user.progressHistory = []; user.coins = 0;
+      const res = await fetch('/api/users/' + userId, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(user)});
+      showToast(res.ok ? 'Progress reset' : 'Failed');
+    });
+    load();
+  </script>
+</body>
+</html>
+
+

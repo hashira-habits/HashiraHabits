@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/shared.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/dashboard.html">Dashboard</a>
+      <a href="/progress.html">Progress</a>
+    </nav>
+  </header>
+  <div class="container">
+    <h2>Progress</h2>
+    <div class="grid">
+      <div class="card"><canvas id="xpChart" height="140"></canvas></div>
+      <div class="card"><canvas id="tasksChart" height="140"></canvas></div>
+    </div>
+  </div>
+  <script>
+    const userId = requireAuth();
+    async function load(){
+      const res = await fetch('/api/progress?userId=' + userId);
+      const data = await res.json();
+      const labels = data.xpOverTime.map(x=>x.date);
+      const xp = data.xpOverTime.map(x=>x.xp);
+      new Chart(document.getElementById('xpChart'), { type:'line', data:{ labels, datasets:[{ label:'XP', data:xp, borderColor:'#10b981'}] } });
+      new Chart(document.getElementById('tasksChart'), { type:'doughnut', data:{ labels:['Completed','Pending'], datasets:[{ data:[data.completedVsPending.completed, data.completedVsPending.pending], backgroundColor:['#2563eb','#f59e0b'] }] } });
+    }
+    load();
+  </script>
+</body>
+</html>
+
+
